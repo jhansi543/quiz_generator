@@ -3,10 +3,10 @@ import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from .scraper import scrape_wikipedia
-from .llm_quiz_generator import generate_quiz as generate_quiz_llm
-from .database import get_database, close_database
-from .models import GenerateRequest
+from scraper import scrape_wikipedia
+from llm_quiz_generator import generate_quiz as generate_quiz_llm
+from database import get_database, close_database
+from models import GenerateRequest
 from bson import ObjectId
 
 load_dotenv()
@@ -77,18 +77,30 @@ async def generate_quiz(payload: GenerateRequest):
 
 @app.get("/history")
 async def history():
-    db = get_database()
-    # exclude large fields from history listing (full_text may be large)
-    cursor = db.quizzes.find({}, {"quiz": 0, "summary": 0, "key_entities": 0, "full_text": 0})
-    items = []
-    async for doc in cursor:
-        items.append({
-            "id": str(doc.get("_id")),
-            "url": doc.get("url"),
-            "title": doc.get("title"),
-            "date_generated": str(doc.get("_id").generation_time) if doc.get("_id") else None
-        })
-    return items
+    try:
+        db = get_database()
+        # exclude large fields from history listing (full_text may be large)
+        cursor = db.quizzes.find({}, {"quiz": 0, "summary": 0, "key_entities": 0, "full_text": 0})
+        items = []
+        async for doc in cursor:
+            items.append({
+                "id": str(doc.get("_id")),
+                "url": doc.get("url"),
+                "title": doc.get("title"),
+                "date_generated": str(doc.get("_id").generation_time) if doc.get("_id") else None
+            })
+        return items
+    except Exception as e:
+        # Avoid exposing internal stack traces; log and return 503
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=503, detail="Service temporarily unavailable")
+
+
+@app.get("/health")
+async def health():
+    """Lightweight health check for load balancers and readiness probes."""
+    return {"status": "ok"}
 
 
 @app.get("/quiz/{quiz_id}")

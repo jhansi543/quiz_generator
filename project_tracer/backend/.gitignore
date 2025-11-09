@@ -3,3 +3,4 @@ gcloud_service_account.json
 __pycache__/
 *.pyc
 .venv/
+.vercel

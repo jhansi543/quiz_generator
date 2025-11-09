@@ -20,6 +20,10 @@ function Message({ m }) {
 }
 
 export default function App() {
+  // Base URL for backend API. Use Vite env var VITE_API_BASE in production
+  // e.g. VITE_API_BASE=https://jhansi-six.vercel.app
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8003";
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
@@ -46,10 +50,12 @@ export default function App() {
 
   async function fetchHistory() {
     try {
-      const res = await axios.get("http://127.0.0.1:8003/history");
+      const res = await axios.get(`${API_BASE}/history`);
       setHistory(res.data || []);
+      setError(null);
     } catch (e) {
-      // ignore
+      console.error("Failed to fetch history:", e);
+      setError(e.response?.data || e.message || "Failed to fetch history");
     }
   }
 
@@ -62,7 +68,7 @@ export default function App() {
     setInput("");
     setLoading(true);
     try {
-      const res = await axios.post("http://127.0.0.1:8003/generate_quiz", {
+      const res = await axios.post(`${API_BASE}/generate_quiz`, {
         url,
       });
       const data = res.data;
@@ -98,7 +104,7 @@ export default function App() {
 
   async function loadHistoryItem(id) {
     try {
-      const res = await axios.get(`http://127.0.0.1:8003/quiz/${id}`);
+  const res = await axios.get(`${API_BASE}/quiz/${id}`);
       const data = res.data;
       // Build assistant messages: first the extracted article text, then the quiz
       const fullText = data.full_text || data.fullText || "";
@@ -124,6 +130,8 @@ export default function App() {
       });
       setMessages(newMessages);
       setSelectedHistoryId(id);
+      // refresh history list (in case of external changes)
+      fetchHistory();
     } catch (e) {
       setError(e.response?.data || e.message);
     }

@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 import os
 import json
 import logging
-from .models import QuizQuestion
+from models import QuizQuestion
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)

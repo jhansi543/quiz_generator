@@ -23,15 +23,15 @@ DATABASE_NAME = os.getenv("DATABASE_NAME", "project_tracer_db")
 client: Optional[AsyncIOMotorClient] = None
 
 def get_database():
-    """Return the motor database instance. Creates the client lazily using MONGODB_URI.
-
-    This function explicitly uses the configured MONGODB_URI (falling back to localhost)
-    and ensures the client is created only once per process.
-    """
-    global client
-    if client is None:
-        client = AsyncIOMotorClient(MONGODB_URI)
+    """Return database instance. Motor's connection pooling handles efficiency."""
+    # Motor automatically pools connections, so creating "new" clients is efficient
+    client = AsyncIOMotorClient(
+        MONGODB_URI,
+        maxPoolSize=1,  # Limit pool size in serverless
+        serverSelectionTimeoutMS=5000,
+    )
     return client[DATABASE_NAME]
+
 
 async def close_database():
     global client
