@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+/* Custom scrollbar for chat panels */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(148,163,184,0.18);
+  border-radius: 9999px;
+}
+
+/* Smooth fonts */
+body { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }

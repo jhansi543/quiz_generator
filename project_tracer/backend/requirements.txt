@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+motor
+httpx
+beautifulsoup4
+pydantic
+python-dotenv
+langchain
+langchain-google-genai
+requests
